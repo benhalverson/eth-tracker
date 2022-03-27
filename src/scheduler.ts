@@ -1,5 +1,4 @@
 import * as dotenv from 'dotenv';
-import { getCoinPrice } from 'src';
 import * as twilio from "twilio";
 
 dotenv.config();
