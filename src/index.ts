@@ -1,6 +1,5 @@
 import * as dotenv from "dotenv";
 import * as twilio from "twilio";
-import axios from "axios";
 import express from "express";
 import { getCoinPrice } from './utils/getCoinPrice';
 import { subscribers } from './data';
@@ -8,8 +7,6 @@ import { subscribers } from './data';
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-
 
 app.use(express.urlencoded({ extended: false }));
 
@@ -44,7 +41,7 @@ app.post("/sms", async (req, res) => {
 });
 
 
-getCoinPrice("btc");
+getCoinPrice("eth");
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
