@@ -5,7 +5,7 @@ export const getCoinPrice = async (coin: string) => {
     const coinPrice = await axios.get(
       "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd"
     );
-    const data = coinPrice.data.filter((token: any) => token.symbol === "eth");
+    const data = coinPrice.data.filter((token: any) => token.symbol === coin);
     const eth = {
       name: data[0].name,
       price: data[0].current_price,
