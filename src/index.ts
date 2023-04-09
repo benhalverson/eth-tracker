@@ -50,6 +50,7 @@ app.post("/sms", async (req, res) => {
         });
 
         SMS.message(`You are now tracking ${coinPrice.name}`);
+        SMS.message(`You are now tracking ${coinPrice.price}`);
       }
     }
   } else {
