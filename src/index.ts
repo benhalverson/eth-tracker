@@ -1,12 +1,23 @@
-import * as dotenv from "dotenv";
+import { config } from "dotenv";
 import * as twilio from "twilio";
-import express from "express";
-import { getCoinPrice } from './utils/getCoinPrice';
-import { subscribers } from './data';
+import express, {Request, Response, NextFunction} from "express";
+import { getCoinPrice } from "./utils/getCoinPrice";
+import { checkPrices } from "./scheduler";
+import Redis from "ioredis";
+import { jwtCheck } from './utils/auth';
 
-dotenv.config();
+
+config();
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const redisClient = new Redis(
+  process.env.REDIS_URL || "redis://localhost:6379"
+);
+
+redisClient.on("error", (err) => {
+  console.error("Redis error ", err);
+});
 
 app.use(express.urlencoded({ extended: false }));
 
@@ -28,7 +39,16 @@ app.post("/sms", async (req, res) => {
           token: coinID,
           targetPrice: coinPrice.price,
         };
-        subscribers.push(sub);
+        redisClient.rpush("subscribers", JSON.stringify(sub), (err) => {
+          console.log("rpush subscribers", sub);
+          if (err) {
+            console.error("Error adding subscriber to Redis:", err);
+            SMS.message("Error tracking coin. Please try again later.");
+          } else {
+            SMS.message(`You are now tracking ${coinPrice.name}`);
+          }
+        });
+
         SMS.message(`You are now tracking ${coinPrice.name}`);
       }
     }
@@ -40,10 +60,11 @@ app.post("/sms", async (req, res) => {
   res.end(twiml.toString());
 });
 
-
-getCoinPrice("eth");
-
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+// Call checkPrice function every minute
+setInterval(() => {
+  checkPrices(redisClient);
+}, 60000);

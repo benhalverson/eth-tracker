@@ -1,18 +1,28 @@
 import axios from "axios";
 
-export const getCoinPrice = async (coin: string) => {
+export const getCoinPrice = async (symbol: string) => {
   try {
-    const coinPrice = await axios.get(
-      "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd"
+    const response = await axios.get(
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd`
     );
-    const data = coinPrice.data.filter((token: any) => token.symbol === "eth");
-    const eth = {
-      name: data[0].name,
-      price: data[0].current_price,
-    };
-    console.log("eth", eth);
+    const data = response.data;
 
-    return eth;
+    const coinData = data.find((coin: any) => coin.symbol === symbol);
+
+    console.log('coinData', coinData);
+    if (!coinData) {
+      console.error("Coin not found");
+      return null;
+    }
+
+    const result = {
+      name: coinData.name,
+      price: coinData.current_price,
+    };
+
+    console.log(`${symbol} data:`, result);
+
+    return result;
   } catch (error: any) {
     console.error("Error getting price", error.message);
   }
