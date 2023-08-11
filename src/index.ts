@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 const TIMEOUT_MS = 2000;
 
 const redisClient = new Redis({
-  host: "redis", // Use the service name from docker-compose.yml
+  host: "redis", 
   port: Number(process.env.REDIS_PORT) || 6379, // Convert to number
 });
 
@@ -20,8 +20,10 @@ const connectToRedis = async () => {
   try {
     await redisClient.connect();
     console.log("Connected to Redis");
+    console.log("Redis status: ", redisClient.status);
   } catch (error) {
     console.error("Error connecting to Redis:", error);
+    console.log("Redis status: ", redisClient.status);
     setTimeout(connectToRedis, TIMEOUT_MS);
   } finally{
     await redisClient.quit();
