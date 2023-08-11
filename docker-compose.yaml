@@ -1,0 +1,27 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env 
+      # Add other environment variables here
+    depends_on:
+      - redis
+    networks:
+      - api
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - api
+    env_file:
+      - .env
+
+networks:
+  api:
+    driver: bridge

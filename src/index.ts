@@ -1,24 +1,35 @@
 import { config } from "dotenv";
 import * as twilio from "twilio";
-import express, {Request, Response, NextFunction} from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { getCoinPrice } from "./utils/getCoinPrice";
 import { checkPrices } from "./scheduler";
 import Redis from "ioredis";
-import { jwtCheck } from './utils/auth';
-
+import { jwtCheck } from "./utils/auth";
 
 config();
 const app = express();
 const PORT = process.env.PORT || 3000;
+const TIMEOUT_MS = 2000;
 
-const redisClient = new Redis(
-  process.env.REDIS_URL || "redis://localhost:6379"
-);
-
-redisClient.on("error", (err) => {
-  console.error("Redis error ", err);
+const redisClient = new Redis({
+  host: "redis", // Use the service name from docker-compose.yml
+  port: Number(process.env.REDIS_PORT) || 6379, // Convert to number
 });
 
+const connectToRedis = async () => {
+  try {
+    await redisClient.connect();
+    console.log("Connected to Redis");
+  } catch (error) {
+    console.error("Error connecting to Redis:", error);
+    setTimeout(connectToRedis, TIMEOUT_MS);
+  } finally{
+    await redisClient.quit();
+  }
+};
+
+
+connectToRedis();
 app.use(express.urlencoded({ extended: false }));
 
 app.post("/sms", async (req, res) => {
@@ -64,4 +75,3 @@ app.listen(PORT, () => {
 setInterval(() => {
   checkPrices(redisClient);
 }, 300000);
-
